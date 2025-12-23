@@ -533,6 +533,8 @@ def test_function_mock(monkeypatch):
     # テストを実行
 ```
 
+monkeypatchの詳細は、https://docs.pytest.org/en/stable/how-to/monkeypatch.html を参照してください。
+
 ### capsysの例
 
 ```python
