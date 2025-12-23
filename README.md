@@ -54,3 +54,12 @@ pytest --version
 - 仮想環境を有効化した状態で作業を行ってください
 - 作業が終わったら、`deactivate`コマンドで仮想環境を無効化できます
 
+## pytest 起動パラメータ
+
+```bash
+pytest -v # 冗長モード
+pytest -s # capture=no （要はprint文が出力される）
+pytest -q # クワイエットモード
+```
+
+
