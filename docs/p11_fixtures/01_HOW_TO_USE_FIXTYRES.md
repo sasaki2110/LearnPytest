@@ -207,11 +207,53 @@ def test_example_2():
     assert True
 ```
 
+### autouseの実行順序
+
+`autouse=True` のフィクスチャが複数ある場合、実行順序は以下のルールで決まります：
+
+1. **依存関係**: フィクスチャ間の依存関係がある場合は、依存先が先に実行される
+2. **フィクスチャ名のアルファベット順**: 依存関係がない場合、**フィクスチャ名でアルファベット順にソート**されて実行される
+
+**実行順序の例:**
+
+```python
+@pytest.fixture(autouse=True)
+def setup_logging():  # アルファベット順で後
+    print("ログ設定が完了しました")
+    yield
+    print("ログ設定のクリーンアップ")
+
+@pytest.fixture(autouse=True)
+def reset_counter():  # アルファベット順で先
+    print("カウンターをリセット")
+    yield
+    print("テスト終了後のクリーンアップ")
+
+def test_example():
+    print("テスト実行")
+    assert True
+```
+
+**実行順序:**
+```
+1. reset_counter のセットアップ（yield前）
+2. setup_logging のセットアップ（yield前）
+3. テスト関数の実行
+4. setup_logging のクリーンアップ（yield後）
+5. reset_counter のクリーンアップ（yield後）
+```
+
+**注意点:**
+- セットアップはアルファベット順（依存関係がない場合）
+- クリーンアップはセットアップの逆順（後に入ったものから先にクリーンアップ）
+- 依存関係がある場合は、依存先が先に実行される
+
 ### autouseの注意点
 
 - すべてのテストに適用されるため、パフォーマンスに影響する可能性がある
 - 明示的に指定しないため、テストコードから依存関係が見えにくくなる
 - 必要な場合のみ使用することを推奨
+- 実行順序はフィクスチャ名のアルファベット順になるため、順序が重要な場合は依存関係を明示的に定義する
 
 ---
 
@@ -273,6 +315,38 @@ def test_with_database(database_connection):
 ## フィクスチャのクリーンアップ（yield）
 
 フィクスチャで `yield` を使用することで、テスト実行後のクリーンアップ処理を記述できます。
+
+### yieldとは
+
+`yield` は、フィクスチャで**セットアップとクリーンアップを分離**するためのキーワードです。`return` と異なり、テスト実行後にクリーンアップ処理を実行できます。
+
+**動作の流れ:**
+
+1. **`yield` の前**: セットアップ処理（テスト実行前）
+2. **`yield` の時点**: テスト関数が実行される
+3. **`yield` の後**: クリーンアップ処理（テスト実行後）
+
+**実行順序の例:**
+
+```python
+@pytest.fixture
+def example_fixture():
+    print("1. セットアップ処理")  # yield前
+    resource = {"value": 42}
+    yield resource  # ここでテスト関数が実行される
+    print("3. クリーンアップ処理")  # yield後
+
+def test_example(example_fixture):
+    print("2. テスト関数の実行")
+    assert example_fixture["value"] == 42
+```
+
+**実行結果:**
+```
+1. セットアップ処理
+2. テスト関数の実行
+3. クリーンアップ処理
+```
 
 ### yieldの基本的な使い方
 
