@@ -1,6 +1,8 @@
 """
 ファイルサービスのテスト
 ファイル操作をモック化してテストします。
+
+全般的に、pathを丸々モック化して、必要なメソッドの戻り値を設定する。
 """
 
 import pytest
@@ -16,7 +18,6 @@ def file_service():
 
 def test_read_file_success(file_service):
     """ファイル読み込みが成功する場合のテスト"""
-    # Path.exists と Path.read_text をモック化
     with patch("services.file_service.Path") as mock_path:
         mock_path_instance = Mock()
         mock_path_instance.exists.return_value = True

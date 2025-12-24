@@ -10,13 +10,22 @@ from services.weather_service import WeatherService
 
 @pytest.fixture
 def weather_service():
-    """天気サービスのフィクスチャ"""
+    """
+    天気サービスのフィクスチャ（実際のサービスクラスをインスタンス化して返す。）
+    フィクスチャにすることで、同じ初期化コードを繰り返し書かずに済みます。
+    将来的な拡張に対応しやすい。（例：デバッグログの追加、エラーハンドリングの追加など）
+    """
     return WeatherService(api_key="test_api_key")
 
 
 @pytest.fixture
 def mock_requests_get():
-    """requests.get をモック化するフィクスチャ"""
+    """
+    requests.get をモック化するフィクスチャ
+    patchを使用することで、requests.getをモック化して返す。
+    （実際のサービスでは外部APIを呼び出して天気情報を取得するが、テストではモック化して天気情報を返す。）
+    with yieldを使用することで、モック化したrequests.getをテスト関数内で使用できる。
+    """
     with patch("services.weather_service.requests.get") as mock_get:
         yield mock_get
 
@@ -30,10 +39,10 @@ def test_get_weather_success(weather_service, mock_requests_get):
         "temperature": 25,
         "condition": "Sunny"
     }
-    mock_response.raise_for_status = Mock()  # エラーを発生させない
-    mock_requests_get.return_value = mock_response
+    mock_response.raise_for_status = Mock()  # エラーを発生させない。明示的に記述。
+    mock_requests_get.return_value = mock_response  # モック化したrequests.getの戻り値を設定。
     
-    # テスト実行
+    # テスト実行（内部でrequests.getを呼び出して（それがモック化されて）天気情報を取得する。）
     result = weather_service.get_weather("Tokyo")
     
     # 結果を検証
@@ -46,6 +55,7 @@ def test_get_weather_success(weather_service, mock_requests_get):
     call_args = mock_requests_get.call_args
     assert call_args[1]["params"]["city"] == "Tokyo"
     assert call_args[1]["params"]["api_key"] == "test_api_key"
+    assert call_args[0][0] == "https://api.weather.example.com/weather"
 
 
 def test_get_forecast(weather_service, mock_requests_get):

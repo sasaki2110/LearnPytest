@@ -11,7 +11,9 @@ from services.user_service import UserService, Database
 @pytest.fixture
 def mock_database():
     """データベースのモックフィクスチャ"""
+    # Databaseクラスのメソッドを、〇〇全部モック化。
     db = Mock(spec=Database)
+    # UserServiceが呼び出すメソッドをモック化。
     db.connect = Mock()
     return db
 
@@ -19,6 +21,8 @@ def mock_database():
 @pytest.fixture
 def user_service(mock_database):
     """ユーザーサービスのフィクスチャ"""
+    # UserServiceは正規ソースを利用。
+    # データベースはモック化したものを渡す。
     return UserService(mock_database)
 
 
